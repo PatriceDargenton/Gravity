@@ -13,7 +13,7 @@ Gravity Screen Saver est un économiseur d'écran (un écran de veille pour Wind
 
 ## Utilisation
 - Les fichiers Gravity2.exe et Gravity2.exe.config étant renommés en Gravity2.scr et Gravity2.scr.config (c'est fait dans les évènements de post-build dans les options de compilation), il suffit de faire un double-clic sur le Gravity2.scr pour lancer l'écran de veille, et bouton droit : installer pour en faire un écran de veille reconnu par Windows ;
-- Les images doivent être nommées Images\star*.bmp (les zones transparentes doivent être en vert) ;
+- Les images doivent être nommées Images\star*.bmp ou .jpg (les zones transparentes doivent être en vert) ;
 - Les images de fond doivent être nommées Images\space_*.jpg (elles sont facultatives).
 
 ## Limitations
