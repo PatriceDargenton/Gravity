@@ -6,6 +6,7 @@ Gravity Screen Saver est un économiseur d'écran (un écran de veille pour Wind
 
 ## Table des matières
 - [Utilisation](#utilisation)
+- [Gif animé](#gif-animé)
 - [Limitations](#limitations)
 - [Projets](#projets)
 - [Versions](#versions)
@@ -18,7 +19,7 @@ Gravity Screen Saver est un économiseur d'écran (un écran de veille pour Wind
 
 ## Gif animé
 - Pour produire un gif animé, mettre bGif = True dans le code, et les vidéos seront créées dans le dossier Tmp.
-Voici un exemple : [Gravity01](https://www.tiktok.com/@patrice.dargenton/video/7508272001463749910?is_from_webapp=1&sender_device=pc&web_id=7508271818694133270)
+Voici un exemple : [Gravity01](https://www.tiktok.com/@patrice.dargenton/video/7508272001463749910)
 
 ## Limitations
 - La gestion des chocs ne fonctionne pas, du coup elle est désactivée et les corps célestes sont des fantômes les uns par rapport au autres, pour des distances négatives.
