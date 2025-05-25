@@ -417,3 +417,5 @@ Images
 *.xml
 *.vbproj.ini
 Gravity_*.txt
+/AnimatedGif.dll
+/System.Drawing.Common.dll
