@@ -26,6 +26,10 @@
 ' ...
 ' ------------------------------------
 
+Imports System.Collections.Generic
+Imports System.IO
+Imports AnimatedGif
+
 Public Class frmGravityNet ' : Inherits Form
 
 #Region "Constantes"
@@ -88,6 +92,23 @@ Public Class frmGravityNet ' : Inherits Form
     Private m_rMemDateDepartAnimation As Double
     Private m_gravity As New SimulteurGravite(Me)
 
+    ' 25/05/2025 Création de Gif animés
+    Const bGif As Boolean = False
+    Const iNbImagesMax% = 600
+    Const iGifLargeurPetite% = 400
+    Const iGifHauteurPetite% = 300
+    Const iGifHauteurGrande% = 720 '800
+    Const iGifLargeurGrande% = 1280 '600
+    Const bGifGrand As Boolean = True
+    Private m_gif As AnimatedGifCreator
+    Private m_iNbGif% = 0
+    Private m_iNbImages% = 0
+    Private m_lstImage As List(Of Image)
+    Private m_bDepartGif As Boolean = False
+    Const delayGifMsec% = -1 '100 ' -1
+    Const bGifTransparent As Boolean = False
+    Const bTransparent As Boolean = False
+
     ' Structures pour les paramètres de l'écran de veille
     Structure TParametresEcran
 
@@ -145,6 +166,14 @@ Public Class frmGravityNet ' : Inherits Form
             Me.StartPosition = FormStartPosition.Manual
             Me.Location = My.Settings.frmGravityNetPos
             Me.Size = My.Settings.frmGravityNetTaille
+
+            If bGif Then
+                If bGifGrand Then
+                    Me.Size = New Size(iGifLargeurGrande + 16, iGifHauteurGrande + 39)
+                Else
+                    Me.Size = New Size(iGifLargeurPetite + 16, iGifHauteurPetite + 39)
+                End If
+            End If
 
             ' Le ListView n'est pas sizable (sinon ancrer)
             'Me.ListViewPrm.Location = My.Settings.frmConfigPos
@@ -477,8 +506,7 @@ Public Class frmGravityNet ' : Inherits Form
         m_bMajListPrm = True
         If Not bTraiterModifBooleen(e.Index, e.NewValue,
             bTirageAleatoire, bInitialiserFond) Then Exit Sub
-        MAJAnimation(bTirageAleatoire, bInitialiserFond,
-            bControlerPrm:=True)
+        MAJAnimation(bTirageAleatoire, bInitialiserFond, bControlerPrm:=True)
 
     End Sub
 
@@ -499,8 +527,7 @@ Public Class frmGravityNet ' : Inherits Form
         '  ne marche pas dans cet evenement
         'Me.ListViewPrm.Items.Item(e.Item).Text = sValeur
 
-        MAJAnimation(bTirageAleatoire, bInitialiserFond,
-            bControlerPrm:=True)
+        MAJAnimation(bTirageAleatoire, bInitialiserFond, bControlerPrm:=True)
         m_bMajListPrm = True
 
     End Sub
@@ -654,8 +681,7 @@ Public Class frmGravityNet ' : Inherits Form
 
 #Region "Traitements"
 
-    Private Sub MAJAnimation(bTirageAleatoire As Boolean, bInitialiserFond As Boolean,
-            bControlerPrm As Boolean)
+    Private Sub MAJAnimation(bTirageAleatoire As Boolean, bInitialiserFond As Boolean, bControlerPrm As Boolean)
 
         If bControlerPrm Then
             ControlerParametres()
@@ -688,6 +714,12 @@ Public Class frmGravityNet ' : Inherits Form
     End Sub
 
     Private Sub MAJListePrm()
+
+        If bGif OrElse SimulteurGravite.bMasquerConfig Then
+            Me.ListViewPrm.Visible = False
+            m_bMajListPrm = False
+            Exit Sub
+        End If
 
         ' Correction éventuelle des arrondis et autres incohérences
         With Me.ListViewPrm.Items
@@ -862,6 +894,16 @@ Public Class frmGravityNet ' : Inherits Form
 
     Private Sub TimerAnimation_Tick(sender As Object, e As EventArgs) Handles TimerAnimation.Tick
 
+        If SimulteurGravite.bDetecterBoucle AndAlso m_prmE.iDelaiMiliSec > 0 Then
+            Dim rTpsEcoule# = DateAndTime.Timer - m_rMemDateDepartAnimation
+            If rTpsEcoule < SimulteurGravite.iDebugNPremieresSec Then
+                ' Ralentir le départ pour voir si la détection de la boucle fonctionne
+                TimerAnimation.Interval = SimulteurGravite.iDebugDelaiDepartMSec
+            Else
+                TimerAnimation.Interval = m_prmE.iDelaiMiliSec
+            End If
+        End If
+
         If m_prmE.bBoucleAnimation Then
             TimerAnimation.Enabled = False
             BoucleAnimation()
@@ -895,18 +937,23 @@ Public Class frmGravityNet ' : Inherits Form
             Dim rDate As Double
             Const iNbFramesCalculMoy% = 30
             iNbFrames = iNbFrames + 1
-            If iNbFrames = iNbFramesCalculMoy Then
+
+            If bGif AndAlso m_bDepartGif Then
+                Me.Text = m_sTitreAppli & " - Gif n°" & m_iNbGif & " : Img n°" & m_iNbImages & "/" & iNbImagesMax
+            ElseIf iNbFrames = iNbFramesCalculMoy Then
                 rDate = DateAndTime.Timer
                 If rDate <> rMemDate Then
                     rFps = iNbFramesCalculMoy / (rDate - rMemDate)
                     ' Ne pas effacer tout de suite l'explication du prm
-                    If rMemDate <> 0 And rDate - glb_rDateMessageTitre > 5 Then _
-                        Me.Text = m_sTitreAppli & " - Frames/s : " &
+                    If rMemDate <> 0 And rDate - glb_rDateMessageTitre > 5 Then
+                        Dim sMsg$ = " - Frames/s : " &
                             rFps.ToString("####.0") &
                             ", RAM : " & GC.GetTotalMemory(False) &
                             " octets utilisés, " &
                             CInt(m_prmE.iTempsMaxScenarioSec -
                             (DateAndTime.Timer - m_rMemDateDepartAnimation))
+                        Me.Text = m_sTitreAppli & sMsg
+                    End If
                     rMemDate = rDate
                     iNbFrames = 0
                 End If
@@ -918,21 +965,24 @@ Public Class frmGravityNet ' : Inherits Form
         '  pour le tracé dans la frm
         'Me.SuspendLayout()
 
-        If m_gravity.m_bToutesPlanetesHorsEcran Or
-            DateAndTime.Timer - m_rMemDateDepartAnimation >
-                m_prmE.iTempsMaxScenarioSec Then
-            MAJAnimation(bTirageAleatoire:=True, bInitialiserFond:=True,
-                bControlerPrm:=False)
+        If m_gravity.m_bBoucleDetectee Then
+            Exit Sub
         End If
-        m_gravity.SimulerGravite()
+
+        If m_gravity.m_bToutesPlanetesHorsEcran OrElse
+            DateAndTime.Timer - m_rMemDateDepartAnimation > m_prmE.iTempsMaxScenarioSec Then
+            MAJAnimation(bTirageAleatoire:=True, bInitialiserFond:=True, bControlerPrm:=False)
+            ' 25/05/2025 Création de Gif animés : départ automatique
+            If bGif Then DepartNouveauGif()
+        End If
+        m_gravity.SimulerGravite(m_rMemDateDepartAnimation)
 
         If m_prmE.bNePasBufferiserGr Then
             ' Si on ne bufférise pas le graphisme, 
             '  on trace directement dans la form
             If m_grFrm Is Nothing Then m_grFrm = Me.CreateGraphics
             If Not m_bFondInitialise Then
-                If Not m_gravity.m_prm.bNePasInitFond Then _
-                    m_gravity.DessinerFond(m_grFrm)
+                If Not m_gravity.m_prm.bNePasInitFond Then m_gravity.DessinerFond(m_grFrm)
                 m_bFondInitialise = True
             End If
             m_gravity.Dessiner(m_grFrm, m_prmE.bNePasBufferiserGr)
@@ -991,6 +1041,106 @@ Public Class frmGravityNet ' : Inherits Form
 
 Fin:
         'Me.ResumeLayout(False)
+        AjouterImageGif()
+
+    End Sub
+
+    Private Sub DepartNouveauGif()
+        If m_bDepartGif Then FinGif()
+        m_bDepartGif = True
+        m_iNbImages = 0
+        m_iNbGif += 1
+    End Sub
+
+    ' 25/05/2025 Création de Gif animés
+    Private Sub AjouterImageGif()
+
+        If Not bGif Then Exit Sub
+        If Not m_bDepartGif Then Exit Sub
+
+        m_iNbImages += 1
+        Const iNbImgIgnorer% = 0 ' Ignorer les n 1ères images, le cas échéant
+        If m_iNbImages <= iNbImgIgnorer Then Exit Sub
+        If m_iNbImages > iNbImagesMax Then
+            m_bDepartGif = False
+            FinGif()
+            Exit Sub
+        End If
+
+        Dim bmp As Image = New Bitmap(Me.ClientRectangle.Width, Me.ClientRectangle.Height)
+        Dim gr As Graphics = Graphics.FromImage(bmp)
+        Dessiner(gr, bGif:=True)
+        Dim imagePath$ = Application.StartupPath & "\Image.png"
+        bmp.Save(imagePath, Imaging.ImageFormat.Png)
+
+        If IsNothing(m_gif) Then
+            Dim sCheminGif$ = Application.StartupPath & "\Tmp\Gravity" & m_iNbGif & ".gif"
+            Dim sDossierGif$ = Path.GetDirectoryName(sCheminGif)
+            If Not bDossierExiste(sDossierGif) Then Directory.CreateDirectory(sDossierGif)
+            ' Pour réinit. la date de création du fichier
+            If File.Exists(sCheminGif) Then File.Delete(sCheminGif)
+                m_gif = AnimatedGif.AnimatedGif.Create(sCheminGif, delay:=delayGifMsec)
+                m_iNbImages = 1
+                Debug.WriteLine("Taille : " & Me.ClientRectangle.Width & " x " &
+            Me.ClientRectangle.Height)
+                m_lstImage = New List(Of Image)
+            End If
+
+            Debug.WriteLine("Image n°" & m_iNbImages)
+        m_gif.AddFrame(bmp, delay:=delayGifMsec, quality:=GifQuality.Default)
+        If m_iNbImages > iNbImgIgnorer + 1 Then m_lstImage.Add(bmp)
+        Try
+            IO.File.Delete(imagePath)
+        Catch
+        End Try
+
+    End Sub
+
+    Private Sub Dessiner(dc As Graphics, Optional bGif As Boolean = False)
+
+        If bGif AndAlso m_bDepartGif Then
+
+            ' https://docs.microsoft.com/fr-fr/dotnet/api/system.drawing.drawing2d.smoothingmode?view=net-5.0
+            ' Default, None et HighSpeed sont équivalents et spécifient le rendu sans lissage appliqué.
+            ' AntiAlias et HighQuality sont équivalents et spécifient le rendu avec lissage appliqué.
+            If bGifTransparent Then
+                If dc.SmoothingMode <> Drawing.Drawing2D.SmoothingMode.HighQuality Then _
+                    dc.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighQuality
+            Else
+                ' Mode le plus joli ! Mais opaque
+                If dc.SmoothingMode <> Drawing.Drawing2D.SmoothingMode.None Then _
+                    dc.SmoothingMode = Drawing.Drawing2D.SmoothingMode.None
+            End If
+
+            m_gravity.Dessiner(dc, bNePasBufferiserGr:=False, bHighSpeed:=False)
+
+        Else
+            ' Rétablir : pas besoin, car par défaut on trace en vitesse rapide
+            'If bTransparent Then
+            '    If dc.SmoothingMode <> Drawing.Drawing2D.SmoothingMode.HighQuality Then _
+            '        dc.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighQuality
+            'Else
+            '    If dc.SmoothingMode <> Drawing.Drawing2D.SmoothingMode.HighSpeed Then _
+            '        dc.SmoothingMode = Drawing.Drawing2D.SmoothingMode.HighSpeed
+            'End If
+        End If
+
+    End Sub
+
+    Private Sub FinGif()
+
+        If IsNothing(m_gif) Then Exit Sub
+
+        ' Ajouter les images dans l'ordre inverse maintenant, au besoin
+        'm_lstImage.Reverse()
+        'For Each bmp In m_lstImage
+        '    m_gif.AddFrame(bmp, delay:=delayGifMsec, quality:=GifQuality.Default)
+        'Next
+
+        m_gif.Dispose()
+        m_gif = Nothing
+        m_lstImage = Nothing
+        Debug.WriteLine("Fin du Gif")
 
     End Sub
 
@@ -1033,9 +1183,11 @@ Fin:
     End Sub
 
     Private Sub FrmGravityNet_Click(sender As Object, e As EventArgs) Handles MyBase.Click
-        If glb_bModeConfiguration Then _
-            MAJAnimation(bTirageAleatoire:=True, bInitialiserFond:=True,
-                bControlerPrm:=False)
+        If glb_bModeConfiguration Then
+            MAJAnimation(bTirageAleatoire:=True, bInitialiserFond:=True, bControlerPrm:=False)
+            ' 25/05/2025 Création de Gif animés : départ sur un clic
+            If bGif Then DepartNouveauGif()
+        End If
     End Sub
 
     Protected Overrides Sub OnSizeChanged(e As System.EventArgs)
@@ -1061,6 +1213,7 @@ Fin:
         Cursor.Show()
         TimerAnimation.Enabled = False
         m_bQuitterBoucleAnimation = True
+        If Not IsNothing(m_gif) Then FinGif()
     End Sub
 
     Private Sub Quitter()

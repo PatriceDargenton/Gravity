@@ -5,7 +5,7 @@ Imports System.Reflection
 <Assembly: AssemblyDescription("Gravity : l'écran de veille chaotique")>
 <Assembly: AssemblyCompany("")>
 <Assembly: AssemblyProduct("Gravity2.scr")>
-<Assembly: AssemblyCopyright("Copyright © 2024")>
+<Assembly: AssemblyCopyright("Copyright © 2025")>
 <Assembly: AssemblyTrademark("")>
 
-<Assembly: AssemblyVersion("2.0.3.*")>
+<Assembly: AssemblyVersion("2.0.4.*")>

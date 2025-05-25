@@ -15,7 +15,7 @@ Option Explicit On
 Namespace My
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0"),  _
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.14.0.0"),  _
      Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
         Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -68,7 +68,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("800, 500")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("1000, 700")>  _
         Public Property frmGravityNetTaille() As Global.System.Drawing.Size
             Get
                 Return CType(Me("frmGravityNetTaille"),Global.System.Drawing.Size)
@@ -128,7 +128,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("2")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("1")>  _
         Public Property DegreRacine() As Integer
             Get
                 Return CType(Me("DegreRacine"),Integer)
@@ -140,7 +140,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
         Public Property DegreRacine_bRnd() As Boolean
             Get
                 Return CType(Me("DegreRacine_bRnd"),Boolean)
@@ -152,7 +152,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("4")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("6")>  _
         Public Property DegreRacineRndMax() As Integer
             Get
                 Return CType(Me("DegreRacineRndMax"),Integer)
@@ -164,7 +164,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("2")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("1")>  _
         Public Property DegreRacine2() As Integer
             Get
                 Return CType(Me("DegreRacine2"),Integer)
@@ -176,7 +176,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
         Public Property DegreRacine2_bRnd() As Boolean
             Get
                 Return CType(Me("DegreRacine2_bRnd"),Boolean)
@@ -188,7 +188,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("4")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("6")>  _
         Public Property DegreRacine2RndMax() As Integer
             Get
                 Return CType(Me("DegreRacine2RndMax"),Integer)
@@ -404,7 +404,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
         Public Property b3D_bPlanetesAxeV() As Boolean
             Get
                 Return CType(Me("b3D_bPlanetesAxeV"),Boolean)
@@ -416,7 +416,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
         Public Property b3D_bPlanetesAxeV_bRnd() As Boolean
             Get
                 Return CType(Me("b3D_bPlanetesAxeV_bRnd"),Boolean)

@@ -2,6 +2,10 @@
 
 Toutes les modifications notables apportées au projet Gravity sont documentées dans ce fichier.
 
+## [2.04] - 2025-05-25
+## Ajouté
+- Création de Gif animé
+
 ## [2.03] - 2024-08-19 Première version sur GitHub
 ### Modifié
 - .NET Framework 2.0 -> 4.8.

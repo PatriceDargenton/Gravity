@@ -13,7 +13,7 @@ Module modDepart
 
     Public ReadOnly sNomAppli$ = My.Application.Info.Title
     Public ReadOnly sTitreMsg$ = sNomAppli
-    Private Const sDateVersionGravity$ = "19/08/2024"
+    Private Const sDateVersionGravity$ = "25/05/2025"
     Public Const sDateVersionAppli$ = sDateVersionGravity
 
     Public ReadOnly sVersionAppli$ =

@@ -6,7 +6,7 @@
       <Value Profile="(Default)">0, 0</Value>
     </Setting>
     <Setting Name="frmGravityNetTaille" Type="System.Drawing.Size" Scope="User">
-      <Value Profile="(Default)">800, 500</Value>
+      <Value Profile="(Default)">1000, 700</Value>
     </Setting>
     <Setting Name="bAffichageBanniere" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -21,22 +21,22 @@
       <Value Profile="(Default)">Images\Star_*.*</Value>
     </Setting>
     <Setting Name="DegreRacine" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="DegreRacine_bRnd" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="DegreRacineRndMax" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">4</Value>
+      <Value Profile="(Default)">6</Value>
     </Setting>
     <Setting Name="DegreRacine2" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="DegreRacine2_bRnd" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="DegreRacine2RndMax" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">4</Value>
+      <Value Profile="(Default)">6</Value>
     </Setting>
     <Setting Name="bMasseSym" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -90,10 +90,10 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="b3D_bPlanetesAxeV" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="b3D_bPlanetesAxeV_bRnd" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="b3D_iNbPlanetesMaxAxeV" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">5</Value>

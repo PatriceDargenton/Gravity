@@ -1,6 +1,6 @@
 
-Imports System.IO ' Pour Path, FileInfo
 Imports System.Drawing.Drawing2D ' Pour LinearGradientBrush
+Imports System.IO ' Pour Path, FileInfo
 
 Public Class SimulteurGravite : Implements IDisposable
 
@@ -10,6 +10,13 @@ Public Class SimulteurGravite : Implements IDisposable
 
     ' Booléen pour annuler la gravité (debug choc)
     Private Const bGravite As Boolean = True
+
+    ' Si c'est chaotique, cela ne va pas toujours fonctionner, même pratiquement jamais
+    Public Const bDetecterBoucle As Boolean = False
+    Public Const bMasquerConfig As Boolean = False
+    Public Const iTpsBoucleMinSec% = 5
+    Public Const iDebugNPremieresSec% = 2
+    Public Const iDebugDelaiDepartMSec% = 500
 
     'Private Const bTestOrb3D As Boolean = False
 
@@ -29,6 +36,7 @@ Public Class SimulteurGravite : Implements IDisposable
     ' Pour savoir s'il faut initialiser les img de sprites
     Public m_bMembCercle As Boolean
     Public m_bToutesPlanetesHorsEcran As Boolean
+    Public m_bBoucleDetectee As Boolean
     Public m_szTailleFenetre As Size
     Public m_rectMAJGroupeSprites As Rectangle ' Rectangle de mise à jour
     Public m_iNbSprites% = 0
@@ -41,6 +49,7 @@ Public Class SimulteurGravite : Implements IDisposable
     Private m_aff As TAffichage
     Private m_iNbPtsTot%
     Private m_pt() As TPoint
+    Private m_ptOrig() As TPoint
     Private m_aCoordZ!()
     Private m_aIndexCoordZ%()
 
@@ -177,6 +186,7 @@ Public Class SimulteurGravite : Implements IDisposable
 
         m_bSystemeInitialise = False
         m_bToutesPlanetesHorsEcran = True
+        m_bBoucleDetectee = False
 
         m_prm.bImageFond = My.Settings.bImageFond
         m_prm.bMAJGroupeSprites = My.Settings.bMAJGroupeSprites
@@ -599,46 +609,46 @@ Nouveau_Tirage:
                 i = l * sys2.iNbPts
                 sys1.rAngle = CDec(rAngleDepart1 + 2D * Math.PI * l / sys1.iNbPts)
                 sys2.rAngle = CDec(rAngleDepart2 + sys1.rAngle +
-                2D * Math.PI * k / sys2.iNbPts)
+                    2D * Math.PI * k / sys2.iNbPts)
                 m_pt(i + k).rX = CDec(m_aff.rMaxx * 0.5 +
-                sys1.rAmplitPos * Math.Cos(sys1.rAngle) +
-                sys2.rAmplitPos * Math.Cos(sys2.rAngle))
+                    sys1.rAmplitPos * Math.Cos(sys1.rAngle) +
+                    sys2.rAmplitPos * Math.Cos(sys2.rAngle))
                 m_pt(i + k).rY = CDec(m_aff.rMaxy * 0.5 +
-                sys1.rAmplitPos * Math.Sin(sys1.rAngle) +
-                sys2.rAmplitPos * Math.Sin(sys2.rAngle))
+                    sys1.rAmplitPos * Math.Sin(sys1.rAngle) +
+                    sys2.rAmplitPos * Math.Sin(sys2.rAngle))
                 m_pt(i + k).rZ = 0
                 If m_b3D Then
                     If bTest3D Then
                         sys2.rAngle = CDec(2D * Math.PI * k / sys2.iNbPts)
                         m_pt(i + k).rX = CDec(m_aff.rMaxx * 0.5 +
-                        sys2.rAmplitPos * Math.Sin(sys2.rAngle + sys2.rAxz) *
-                        Math.Sin(sys1.rAngle + sys2.rAxyP) +
-                        sys1.rAmplitPos * Math.Cos(sys1.rAngle))
+                            sys2.rAmplitPos * Math.Sin(sys2.rAngle + sys2.rAxz) *
+                            Math.Sin(sys1.rAngle + sys2.rAxyP) +
+                            sys1.rAmplitPos * Math.Cos(sys1.rAngle))
                         m_pt(i + k).rY = CDec(m_aff.rMaxy * 0.5 +
-                        sys2.rAmplitPos * Math.Sin(sys2.rAngle + sys2.rAxz) *
-                        Math.Cos(sys1.rAngle + sys2.rAxyP) +
-                        sys1.rAmplitPos * Math.Sin(sys1.rAngle))
+                            sys2.rAmplitPos * Math.Sin(sys2.rAngle + sys2.rAxz) *
+                            Math.Cos(sys1.rAngle + sys2.rAxyP) +
+                            sys1.rAmplitPos * Math.Sin(sys1.rAngle))
                         m_pt(i + k).rZ = CDec(m_aff.rMaxz * 0.5 +
-                        sys2.rAmplitPos * Math.Cos(sys2.rAngle + sys2.rAxz))
+                            sys2.rAmplitPos * Math.Cos(sys2.rAngle + sys2.rAxz))
                     Else
                         m_pt(i + k).rX = CDec(m_aff.rMaxx * 0.5 +
-                        sys1.rAmplitPos * Math.Cos(sys1.rAngle) +
-                        sys2.rAmplitPos * Math.Cos(sys2.rAngle))
+                            sys1.rAmplitPos * Math.Cos(sys1.rAngle) +
+                            sys2.rAmplitPos * Math.Cos(sys2.rAngle))
                         m_pt(i + k).rY = m_aff.rMaxy * 0.5D
                         m_pt(i + k).rZ = CDec(m_aff.rMaxz * 0.5 +
-                        sys1.rAmplitPos * Math.Sin(sys1.rAngle) +
-                        sys2.rAmplitPos * Math.Sin(sys2.rAngle))
+                            sys1.rAmplitPos * Math.Sin(sys1.rAngle) +
+                            sys2.rAmplitPos * Math.Sin(sys2.rAngle))
                     End If
                 End If
                 ' Déphasage des vecteurs vitesses par rapport aux positions
                 sys1.rAngle = CDec(rAngleDepart1 +
-                Math.PI * (2D * l / sys1.iNbPts - 0.5D))
+                    Math.PI * (2D * l / sys1.iNbPts - 0.5D))
                 sys2.rAngle = CDec(rAngleDepart2 + sys1.rAngle +
                 2D * Math.PI * k / sys2.iNbPts)
                 m_pt(i + k).rVx = CDec(sys1.rAmplitVit * Math.Cos(sys1.rAngle) +
-                sys2.rAmplitVit * Math.Cos(sys2.rAngle))
+                    sys2.rAmplitVit * Math.Cos(sys2.rAngle))
                 m_pt(i + k).rVy = CDec(sys1.rAmplitVit * Math.Sin(sys1.rAngle) +
-                sys2.rAmplitVit * Math.Sin(sys2.rAngle))
+                    sys2.rAmplitVit * Math.Sin(sys2.rAngle))
                 m_pt(i + k).rVz = 0
 
                 If m_b3D Then
@@ -646,19 +656,19 @@ Nouveau_Tirage:
                         sys1.rAngle = CDec(2D * Math.PI * l / sys1.iNbPts)
                         sys2.rAngle = CDec(2D * Math.PI * k / sys2.iNbPts)
                         m_pt(i + k).rVx = CDec(-sys2.rAmplitVit *
-                        Math.Cos(sys2.rAngle + sys2.rAxz) *
-                        Math.Sin(sys1.rAngle + sys2.rAxy) -
-                        sys1.rAmplitVit * Math.Sin(sys1.rAngle))
+                            Math.Cos(sys2.rAngle + sys2.rAxz) *
+                            Math.Sin(sys1.rAngle + sys2.rAxy) -
+                            sys1.rAmplitVit * Math.Sin(sys1.rAngle))
                         m_pt(i + k).rVy = CDec(-sys2.rAmplitVit *
-                        Math.Cos(sys2.rAngle + sys2.rAxz) *
-                        Math.Cos(sys1.rAngle + sys2.rAxy) +
-                        sys1.rAmplitVit * Math.Cos(sys1.rAngle))
+                            Math.Cos(sys2.rAngle + sys2.rAxz) *
+                            Math.Cos(sys1.rAngle + sys2.rAxy) +
+                            sys1.rAmplitVit * Math.Cos(sys1.rAngle))
                         m_pt(i + k).rVz = CDec(sys2.rAmplitVit * Math.Sin(sys2.rAngle + sys2.rAxz))
                     Else
                         m_pt(i + k).rVy = 0
                         m_pt(i + k).rVz = CDec(
-                        sys1.rAmplitVit * Math.Sin(sys1.rAngle) +
-                        sys2.rAmplitVit * Math.Sin(sys2.rAngle))
+                            sys1.rAmplitVit * Math.Sin(sys1.rAngle) +
+                            sys2.rAmplitVit * Math.Sin(sys2.rAngle))
                     End If
                 End If
 
@@ -687,7 +697,7 @@ Nouveau_Tirage:
                 ' En 3D le diamètre est proportionnel à la moitié du zoom
                 'Or bTestOrb3D Then _
                 If m_b3D Then _
-                iDiametre = CInt(0.5 * m_aff.rZoom * m_pt(i + k).rM * 2)
+                    iDiametre = CInt(0.5 * m_aff.rZoom * m_pt(i + k).rM * 2)
 
                 Dim rRnd! = sys2.aPlanete(k).rSpin
                 If bMasseSym Then rRnd = sys2.aPlaneteSym(j).rSpin
@@ -713,6 +723,25 @@ Nouveau_Tirage:
 
             Next k
         Next l
+
+        If bDetecterBoucle Then
+            ' Détecter le retour à l'origine (pour faire une séquence en boucle : gif animé)
+            ReDim m_ptOrig(m_iNbPtsTot - 1)
+            For l = 0 To sys1.iNbPts - 1
+                For k = 0 To sys2.iNbPts - 1
+                    i = l * sys2.iNbPts
+                    m_ptOrig(i + k).rX = m_pt(i + k).rX
+                    m_ptOrig(i + k).rY = m_pt(i + k).rY
+                    m_ptOrig(i + k).rZ = m_pt(i + k).rZ
+                    m_ptOrig(i + k).rVx = m_pt(i + k).rVx
+                    m_ptOrig(i + k).rVy = m_pt(i + k).rVy
+                    m_ptOrig(i + k).rVz = m_pt(i + k).rVz
+                    m_ptOrig(i + k).rAx = m_pt(i + k).rAx
+                    m_ptOrig(i + k).rAy = m_pt(i + k).rAy
+                    m_ptOrig(i + k).rAz = m_pt(i + k).rAz
+                Next k
+            Next l
+        End If
 
         'If Not bTestOrb3D Then Exit Sub
         If Not (m_b3D And m_b3D_bPlanetesAxeV) Then Exit Sub
@@ -783,7 +812,7 @@ Nouveau_Tirage:
 
 #Region "Traitements"
 
-    Public Sub SimulerGravite()
+    Public Sub SimulerGravite(rMemDateDepartAnimation#)
 
         Dim i%, j%
         Dim rDy, rFacteurGravtitation, rNorme2, rMinNorme, rNorme, rDx, rDz As Decimal
@@ -984,6 +1013,58 @@ Suite:
                 m_bToutesPlanetesHorsEcran = False
 
         Next i
+
+        If Not bDetecterBoucle Then Exit Sub
+        ' Détecter le retour à l'origine (pour faire une séquence en boucle : gif animé)
+        Dim rSommeDelta! = 0
+        For i = 0 To m_iNbPtsTot - 1
+            Dim rDeltaX! = m_pt(i).rX - m_ptOrig(i).rX
+            Dim rDeltaY! = m_pt(i).rY - m_ptOrig(i).rY
+            Dim rDeltaZ! = m_pt(i).rZ - m_ptOrig(i).rZ
+            Dim rDeltaVX! = m_pt(i).rVx - m_ptOrig(i).rVx
+            Dim rDeltaVY! = m_pt(i).rVy - m_ptOrig(i).rVy
+            Dim rDeltaVZ! = m_pt(i).rVz - m_ptOrig(i).rVz
+            Dim rDeltaAX! = m_pt(i).rAx - m_ptOrig(i).rAx
+            Dim rDeltaAY! = m_pt(i).rAy - m_ptOrig(i).rAy
+            Dim rDeltaAZ! = m_pt(i).rAz - m_ptOrig(i).rAz
+            Dim rDelta! = rDeltaX * rDeltaX + rDeltaY * rDeltaY + rDeltaZ * rDeltaZ
+            ' Seulement la position et la vitesse pour commencer
+            rDelta += rDeltaVX * rDeltaVX + rDeltaVY * rDeltaVY + rDeltaVZ * rDeltaVZ
+            'rDelta += rDeltaAX * rDeltaAX + rDeltaAY * rDeltaAY + rDeltaAZ * rDeltaAZ
+
+            'rDelta =
+            '    Math.Abs(m_pt(i).rX - m_ptOrig(i).rX) +
+            '    Math.Abs(m_pt(i).rY - m_ptOrig(i).rY) +
+            '    Math.Abs(m_pt(i).rZ - m_ptOrig(i).rZ)
+            rSommeDelta += rDelta
+        Next i
+
+        Static m_rMemDelta! = 0, m_rVitesse! = 0, m_rMemVitesse! = 0, m_rAcceleration! = 0
+        m_rVitesse = Math.Abs(rSommeDelta - m_rMemDelta)
+        m_rAcceleration = Math.Abs(m_rVitesse - m_rMemVitesse)
+        m_rMemVitesse = m_rVitesse
+        m_rMemDelta = rSommeDelta
+        Dim rTpsEcoule# = DateAndTime.Timer - rMemDateDepartAnimation
+
+        'Debug.WriteLine(Now() & " : Accélération = " & m_rAcceleration.ToString("0.000"))
+        'If m_rAcceleration < 0.1 AndAlso rTpsEcoule > iTpsBoucleMinSec Then
+        '    m_bBoucleDetectee = True
+        'End If
+
+        'Debug.WriteLine(Now() & " : DeltaPos^2 = " & rSommeDelta.ToString("0.000"))
+        Debug.WriteLine(Now() & " : Delta Pos+Vit^2 = " & rSommeDelta.ToString("0.000"))
+        If rSommeDelta < 200 AndAlso rTpsEcoule > iTpsBoucleMinSec Then
+            m_bBoucleDetectee = True
+        End If
+
+        'If rSommeDelta < 200.0! Then
+        '    'm_bBoucleDetectee = True ' Provoquer la fin de la séquence
+        '    Debug.WriteLine(Now() & " : Delta = " & rSommeDelta.ToString("0.000"))
+        '    Debug.WriteLine("****")
+        'ElseIf rSommeDelta < 2000.0! Then
+        '    Debug.WriteLine(Now() & " : Delta = " & rSommeDelta.ToString("0.000"))
+        'End If
+        'Debug.WriteLine(Now() & " : Delta = " & rSommeDelta.ToString("0.000"))
 
     End Sub
 
@@ -1215,11 +1296,12 @@ Suite:
 
     End Sub
 
-    Public Sub Dessiner(ByRef dc As Graphics, bNePasBufferiserGr As Boolean)
+    Public Sub Dessiner(ByRef dc As Graphics, bNePasBufferiserGr As Boolean,
+            Optional bHighSpeed As Boolean = True)
 
         ' Dessin général
 
-        If dc.SmoothingMode <> SmoothingMode.HighSpeed Then _
+        If bHighSpeed AndAlso dc.SmoothingMode <> SmoothingMode.HighSpeed Then _
             dc.SmoothingMode = SmoothingMode.HighSpeed
 
         ' Fonctionnalité du GDI+ pas encore disp. en .Net :
