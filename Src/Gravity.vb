@@ -493,11 +493,9 @@ Nouveau_Tirage:
             For j = 0 To iNbPlanetesZ - 1
                 m_iNbPtsTot += 1
                 ReDim Preserve planeteAxeZ.aPlanete(j)
-                planeteAxeZ.aPlanete(j).rMasse =
-                    rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+                planeteAxeZ.aPlanete(j).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
                 If iNbFichiersPlanetes > 0 Then
-                    planeteAxeZ.aPlanete(j).iNumImg =
-                        iRandomiser(0, iNbFichiersPlanetes - 1)
+                    planeteAxeZ.aPlanete(j).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
                 End If
                 planeteAxeZ.aPlanete(j).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
             Next j
@@ -567,17 +565,15 @@ Nouveau_Tirage:
         iDivNbPts2 = sys2.iNbPts Mod 2
 
         bMasseSym = m_prm.bMasseSym
-        If m_prm.bMasseSym_bRnd Then _
-            bMasseSym = (arRnd(iRndbMasseSym2) > 0.5) ' 1 chance sur 2
+        If m_prm.bMasseSym_bRnd Then bMasseSym = (arRnd(iRndbMasseSym2) > 0.5) ' 1 chance sur 2
 
         For i = 0 To sys2.iNbPts - 1
-            sys2.aPlanete(i).rMasse =
-                rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+            sys2.aPlanete(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
             If iNbFichiersPlanetes > 0 Then
                 sys2.aPlanete(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
                 'sys2.aPlanete(i).iNumImg = i ' 01/06/2025 Pour alerterner les images
             End If
-            sys2.aPlanete(i).rSpin = rRandomiser(0, 1) 'CDec(Rnd())
+            sys2.aPlanete(i).rSpin = rRandomiser(0, 1)
             'sys2.aPlanete(i).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
         Next i
 
@@ -586,11 +582,9 @@ Nouveau_Tirage:
             If sys2.iNbPts = 1 Then iNbPts2Sur2 = 1
             ReDim sys2.aPlaneteSym(iNbPts2Sur2)
             For i = 0 To iNbPts2Sur2 - 1
-                sys2.aPlaneteSym(i).rMasse =
-                    rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+                sys2.aPlaneteSym(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
                 If iNbFichiersPlanetes > 0 Then
-                    sys2.aPlaneteSym(i).iNumImg =
-                        iRandomiser(0, iNbFichiersPlanetes - 1, arRnd(iRndNumImgSym2))
+                    sys2.aPlaneteSym(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1, arRnd(iRndNumImgSym2))
                 End If
                 sys2.aPlaneteSym(i).rSpin = arRnd(iRndSpinImgSym2)
             Next i
@@ -599,10 +593,8 @@ Nouveau_Tirage:
         ' Calcul des racines unitaires complexes : Z^n = 1
         '  avec Z un nombre complexe et n = degré ou nombre de planètes par système
 
-        Dim rAngleDepart1 As Decimal '= 0 'Math.PI / 2
-        Dim rAngleDepart2 As Decimal '= 0 'Math.PI / 2
-        rAngleDepart1 = CDec(arRnd(iRndAngleDepart1) * Math.PI * 2)
-        rAngleDepart2 = CDec(arRnd(iRndAngleDepart2) * Math.PI * 2)
+        Dim rAngleDepart1 As Decimal = CDec(arRnd(iRndAngleDepart1) * Math.PI * 2)
+        Dim rAngleDepart2 As Decimal = CDec(arRnd(iRndAngleDepart2) * Math.PI * 2)
 
         i = 0 : j = 0
         For l = 0 To sys1.iNbPts - 1

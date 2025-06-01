@@ -94,6 +94,7 @@ Public Class frmGravityNet ' : Inherits Form
 
     ' 25/05/2025 Création de Gif animés
     Const bGif As Boolean = False
+    Const bSimualtionGif As Boolean = False
     Const iNbImagesMax% = 600
     Const iGifLargeurPetite% = 400
     Const iGifHauteurPetite% = 300
@@ -1070,6 +1071,11 @@ Fin:
             Exit Sub
         End If
 
+        If bSimualtionGif Then
+            If m_iNbImages = 0 Then m_iNbImages = 1
+            Exit Sub
+        End If
+
         Dim bmp As Image = New Bitmap(Me.ClientRectangle.Width, Me.ClientRectangle.Height)
         Dim gr As Graphics = Graphics.FromImage(bmp)
         Dessiner(gr, bGif:=True)
@@ -1082,14 +1088,14 @@ Fin:
             If Not bDossierExiste(sDossierGif) Then Directory.CreateDirectory(sDossierGif)
             ' Pour réinit. la date de création du fichier
             If File.Exists(sCheminGif) Then File.Delete(sCheminGif)
-                m_gif = AnimatedGif.AnimatedGif.Create(sCheminGif, delay:=delayGifMsec)
-                m_iNbImages = 1
-                Debug.WriteLine("Taille : " & Me.ClientRectangle.Width & " x " &
+            m_gif = AnimatedGif.AnimatedGif.Create(sCheminGif, delay:=delayGifMsec)
+            m_iNbImages = 1
+            Debug.WriteLine("Taille : " & Me.ClientRectangle.Width & " x " &
             Me.ClientRectangle.Height)
-                m_lstImage = New List(Of Image)
-            End If
+            m_lstImage = New List(Of Image)
+        End If
 
-            Debug.WriteLine("Image n°" & m_iNbImages)
+        Debug.WriteLine("Image n°" & m_iNbImages)
         m_gif.AddFrame(bmp, delay:=delayGifMsec, quality:=GifQuality.Default)
         If m_iNbImages > iNbImgIgnorer + 1 Then m_lstImage.Add(bmp)
         Try
