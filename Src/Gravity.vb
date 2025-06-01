@@ -298,9 +298,10 @@ Public Class SimulteurGravite : Implements IDisposable
         End If
     End Function
 
-    Private Function rRandomiser(rMin As Decimal, rMax As Decimal) As Decimal
+    Private Function rRandomiser(rMin As Decimal, rMax As Decimal, Optional rRnd As Decimal = -1D) As Decimal
         If rMin = rMax Then rRandomiser = rMin : Exit Function
-        rRandomiser = CDec(Rnd() * (rMax - rMin)) + rMin
+        If rRnd = -1D Then rRnd = CDec(Rnd())
+        rRandomiser = CDec(rRnd * (rMax - rMin)) + rMin
     End Function
 
     Public Sub TirageAleatoire()
@@ -342,6 +343,9 @@ Public Class SimulteurGravite : Implements IDisposable
         Const iRndb3D% = 14
         Const iRndbChocs% = 15
         Const iRndb3D_bPlanetesAxeV_bRnd% = 16
+
+        ' Idée : considérer sys2.iNbPts Max : sys1.iDegreRacineMax + sys2.iDegreRacineMax
+        ' 17 à 17 + sys2.iNbPts * 6
 
         Const iNbRnd% = 16
         Dim arRnd(iNbRnd) As Decimal
@@ -400,7 +404,7 @@ Nouveau_Tirage:
         m_aff.rMaxV = m_szTailleFenetre.Height
         m_aff.rMaxx = m_aff.rMaxH
         m_aff.rMaxy = m_aff.rMaxV
-        If m_b3D Then 'Or bTestOrb3D Then
+        If m_b3D Then
             ' Définition de la perspective 3D
             m_aff.rMaxx = 0.66D * m_aff.rMaxH
             m_aff.rMaxy = 0.66D * m_aff.rMaxV
@@ -548,12 +552,10 @@ Nouveau_Tirage:
         ReDim m_aSprites(0)
         ReDim m_aCoordZ(0)
         ReDim m_aIndexCoordZ(0)
-        'GC.Collect() ' Récuperer tout de suite la mémoire allouée des sprites
-
         ReDim sys2.aPlanete(sys2.iNbPts - 1)
 
         ReDim m_pt(m_iNbPtsTot - 1)
-        If m_b3D Then 'Or bTestOrb3D Then
+        If m_b3D Then
             ReDim m_aCoordZ(m_iNbPtsTot - 1)
             ReDim m_aIndexCoordZ(m_iNbPtsTot - 1)
         End If
@@ -571,7 +573,7 @@ Nouveau_Tirage:
             sys2.aPlanete(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
             If iNbFichiersPlanetes > 0 Then
                 sys2.aPlanete(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
-                'sys2.aPlanete(i).iNumImg = i ' 01/06/2025 Pour alerterner les images
+                'sys2.aPlanete(i).iNumImg = i ' 01/06/2025 Pour alterner les images
             End If
             sys2.aPlanete(i).rSpin = rRandomiser(0, 1)
             'sys2.aPlanete(i).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)

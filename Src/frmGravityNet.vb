@@ -952,7 +952,7 @@ Public Class frmGravityNet ' : Inherits Form
                             ", RAM : " & GC.GetTotalMemory(False) &
                             " octets utilisés, " &
                             CInt(m_prmE.iTempsMaxScenarioSec -
-                            (DateAndTime.Timer - m_rMemDateDepartAnimation))
+                            (DateAndTime.Timer - m_rMemDateDepartAnimation)) & " sec."
                         Me.Text = m_sTitreAppli & sMsg
                     End If
                     rMemDate = rDate
