@@ -1058,6 +1058,9 @@ Fin:
         If Not bGif Then Exit Sub
         If Not m_bDepartGif Then Exit Sub
 
+        ' 01/06/2025 Iconisation de la fenêtre
+        If Me.ClientRectangle.Width = 0 OrElse Me.ClientRectangle.Height = 0 Then Exit Sub
+
         m_iNbImages += 1
         Const iNbImgIgnorer% = 0 ' Ignorer les n 1ères images, le cas échéant
         If m_iNbImages <= iNbImgIgnorer Then Exit Sub

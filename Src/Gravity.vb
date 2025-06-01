@@ -575,6 +575,7 @@ Nouveau_Tirage:
                 rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
             If iNbFichiersPlanetes > 0 Then
                 sys2.aPlanete(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
+                'sys2.aPlanete(i).iNumImg = i ' 01/06/2025 Pour alerterner les images
             End If
             sys2.aPlanete(i).rSpin = rRandomiser(0, 1) 'CDec(Rnd())
             'sys2.aPlanete(i).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
@@ -1540,8 +1541,10 @@ Fin:
 
     Public Sub InitialiserTailleEcran(szClientSize As Size)
 
-        m_rectEcran = New Rectangle(0, 0,
-            szClientSize.Width, szClientSize.Height)
+        ' 01/06/2025 Iconisation de la fenêtre
+        If szClientSize.Width = 0 OrElse szClientSize.Height = 0 Then Exit Sub
+
+        m_rectEcran = New Rectangle(0, 0, szClientSize.Width, szClientSize.Height)
         m_szTailleFenetre = szClientSize
 
         m_lgbFondDegrade = New LinearGradientBrush(m_rectEcran,
