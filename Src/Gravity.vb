@@ -289,19 +289,29 @@ Public Class SimulteurGravite : Implements IDisposable
     End Sub
 
     Private Function iRandomiser%(iMin%, iMax%, Optional rRnd As Decimal = -1D)
+
         If iMin = iMax Then iRandomiser = iMin : Exit Function
+
+        ' Si la randomisation n'est pas passée en paramètre alors la faire
         If rRnd = -1D Then rRnd = CDec(Rnd())
+
         iRandomiser = CInt(rRnd * (iMax - iMin)) + iMin
         If iRandomiser > iMax Then
             Stop
             iRandomiser = iMax
         End If
+
     End Function
 
     Private Function rRandomiser(rMin As Decimal, rMax As Decimal, Optional rRnd As Decimal = -1D) As Decimal
+
         If rMin = rMax Then rRandomiser = rMin : Exit Function
+
+        ' Si la randomisation n'est pas passée en paramètre alors la faire
         If rRnd = -1D Then rRnd = CDec(Rnd())
+
         rRandomiser = CDec(rRnd * (rMax - rMin)) + rMin
+
     End Function
 
     Public Sub TirageAleatoire()
@@ -346,9 +356,15 @@ Public Class SimulteurGravite : Implements IDisposable
 
         ' Idée : considérer sys2.iNbPts Max : sys1.iDegreRacineMax + sys2.iDegreRacineMax
         ' 17 à 17 + sys2.iNbPts * 6
-
+        Const bMemoriserEntierementTirage As Boolean = True ' 27/07/2025
+        Dim iNbPoints2% = m_prm.iDegreRacine2RndMax
         Const iNbRnd% = 16
-        Dim arRnd(iNbRnd) As Decimal
+        Dim iNbPlanetes3D% = 1 + m_prm.b3D_iNbPlanetesMaxAxeV * 4
+        Dim iNbRnd1% = iNbRnd
+        Dim iNbRnd1AvecP3D% = iNbRnd1 + iNbPlanetes3D
+        Dim iNbRnd1Et2% = iNbRnd1AvecP3D + iNbPoints2 * 3
+        'Dim arRnd(iNbRnd1Et2) As Decimal
+        Static arRnd(iNbRnd1Et2) As Decimal ' 27/07/2025 Test de conservation du tirage
 
         Dim asFichiersImg$() = Nothing
 
@@ -380,9 +396,13 @@ Public Class SimulteurGravite : Implements IDisposable
 Nouveau_Tirage:
         m_bMembCercle = m_prm.bCercle
         Randomize() ' Initialise le générateur de nombres aléatoires.
-        For i = 0 To iNbRnd
+        Static bInit As Boolean = False
+        'If Not bInit Then
+        For i = 0 To iNbRnd1Et2
             arRnd(i) = CDec(Rnd())
         Next i
+        'End If
+        bInit = True
 
         m_bChocs = m_prm.bChocs
         If m_prm.bChocs_bRnd Then _
@@ -479,16 +499,18 @@ Nouveau_Tirage:
 
         Dim iNbPlanetesZ%
 
-        'If bTestOrb3D Then
-        If m_b3D And m_b3D_bPlanetesAxeV Then
+        If m_b3D AndAlso m_b3D_bPlanetesAxeV Then
 
             ' Ajout de planètes dans l'axe vertical 3D :
             '  Cela ne pertube pas l'équilibre du plan horizontal
 
-            'Const iNbPlanetesZMax% = 5
             Dim iNbPlanetesZMax% = m_prm.b3D_iNbPlanetesMaxAxeV
             If m_prm.b3D_bPlanetesAxeV_bRnd Then
-                iNbPlanetesZ = iRandomiser(0, iNbPlanetesZMax)
+                If bMemoriserEntierementTirage Then
+                    iNbPlanetesZ = iRandomiser(0, iNbPlanetesZMax, arRnd(iNbRnd1))
+                Else
+                    iNbPlanetesZ = iRandomiser(0, iNbPlanetesZMax)
+                End If
             Else
                 iNbPlanetesZ = iNbPlanetesZMax
             End If
@@ -497,11 +519,27 @@ Nouveau_Tirage:
             For j = 0 To iNbPlanetesZ - 1
                 m_iNbPtsTot += 1
                 ReDim Preserve planeteAxeZ.aPlanete(j)
-                planeteAxeZ.aPlanete(j).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
-                If iNbFichiersPlanetes > 0 Then
-                    planeteAxeZ.aPlanete(j).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
+
+                If bMemoriserEntierementTirage Then
+                    planeteAxeZ.aPlanete(j).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax,
+                        arRnd(iNbRnd1 + 1 + iNbPlanetesZMax + j))
+                Else
+                    planeteAxeZ.aPlanete(j).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
                 End If
-                planeteAxeZ.aPlanete(j).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
+                If iNbFichiersPlanetes > 0 Then
+                    If bMemoriserEntierementTirage Then
+                        planeteAxeZ.aPlanete(j).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1,
+                            arRnd(iNbRnd1 + 1 + iNbPlanetesZMax * 2 + j))
+                    Else
+                        planeteAxeZ.aPlanete(j).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
+                    End If
+                End If
+                If bMemoriserEntierementTirage Then
+                    planeteAxeZ.aPlanete(j).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg,
+                        arRnd(iNbRnd1 + 1 + iNbPlanetesZMax * 3 + j))
+                Else
+                    planeteAxeZ.aPlanete(j).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
+                End If
             Next j
 
         End If
@@ -570,13 +608,31 @@ Nouveau_Tirage:
         If m_prm.bMasseSym_bRnd Then bMasseSym = (arRnd(iRndbMasseSym2) > 0.5) ' 1 chance sur 2
 
         For i = 0 To sys2.iNbPts - 1
-            sys2.aPlanete(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+
+            ' 27/07/2025 Série n°1 : La masse
+            If bMemoriserEntierementTirage Then
+                sys2.aPlanete(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax, arRnd(i + iNbRnd1))
+            Else
+                sys2.aPlanete(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+            End If
+
             If iNbFichiersPlanetes > 0 Then
-                sys2.aPlanete(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
+                ' 27/07/2025 Série n°2 : Le numéro de l'image
+                If bMemoriserEntierementTirage Then
+                    sys2.aPlanete(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1, arRnd(i * 2 + iNbRnd1))
+                Else
+                    sys2.aPlanete(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1)
+                End If
                 'sys2.aPlanete(i).iNumImg = i ' 01/06/2025 Pour alterner les images
             End If
-            sys2.aPlanete(i).rSpin = rRandomiser(0, 1)
-            'sys2.aPlanete(i).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
+
+            ' 27/07/2025 Série n°3 : Le spin
+            If bMemoriserEntierementTirage Then
+                sys2.aPlanete(i).rSpin = rRandomiser(0, 1, arRnd(i * 3 + iNbRnd1))
+            Else
+                'sys2.aPlanete(i).rSpin = rRandomiser(-rSpinMaxDeg, rSpinMaxDeg)
+                sys2.aPlanete(i).rSpin = rRandomiser(0, 1)
+            End If
         Next i
 
         If bMasseSym Then
@@ -584,7 +640,12 @@ Nouveau_Tirage:
             If sys2.iNbPts = 1 Then iNbPts2Sur2 = 1
             ReDim sys2.aPlaneteSym(iNbPts2Sur2)
             For i = 0 To iNbPts2Sur2 - 1
-                sys2.aPlaneteSym(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+                ' 27/07/2025 Série n°1 : La masse
+                If bMemoriserEntierementTirage Then
+                    sys2.aPlaneteSym(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax, arRnd(i + iNbRnd1))
+                Else
+                    sys2.aPlaneteSym(i).rMasse = rRandomiser(rAmplitMasseMin, rAmplitMasseMax)
+                End If
                 If iNbFichiersPlanetes > 0 Then
                     sys2.aPlaneteSym(i).iNumImg = iRandomiser(0, iNbFichiersPlanetes - 1, arRnd(iRndNumImgSym2))
                 End If
@@ -739,19 +800,29 @@ Nouveau_Tirage:
         End If
 
         'If Not bTestOrb3D Then Exit Sub
-        If Not (m_b3D And m_b3D_bPlanetesAxeV) Then Exit Sub
+        If Not (m_b3D AndAlso m_b3D_bPlanetesAxeV) Then Exit Sub
 
         ' Test Orbites 3D
         ' ToDo : faire une fonction pour l'ajout d'un sprite
+        Dim j2% = 0
         For i = m_iNbPtsTot - iNbPlanetesZ To m_iNbPtsTot - 1
+
+            Dim random1!
+            If bMemoriserEntierementTirage Then
+                random1 = arRnd(iNbRnd1 + 1 + m_prm.b3D_iNbPlanetesMaxAxeV * 4 + j2)
+                j2 += 1
+            Else
+                random1 = Rnd()
+            End If
+
             If m_b3D Then
                 m_pt(i).rX = CDec(m_aff.rMaxx * 0.5)
-                m_pt(i).rY = CDec(m_aff.rMaxy * (2 * Rnd() - 1))
+                m_pt(i).rY = CDec(m_aff.rMaxy * (2 * random1 - 1))
                 m_pt(i).rZ = CDec(m_aff.rMaxz * 0.5)
-            Else ' ???
+            Else ' Pas possible : m_b3D est tjrs True ici
                 m_pt(i).rX = CDec(m_aff.rMaxx * 0.5)
                 m_pt(i).rY = CDec(m_aff.rMaxy * 0.5)
-                m_pt(i).rZ = CDec(m_aff.rMaxz * (2 * Rnd() - 1))
+                m_pt(i).rZ = CDec(m_aff.rMaxz * (2 * random1 - 1))
             End If
             m_pt(i).rVx = 0
             m_pt(i).rVy = 0
@@ -760,9 +831,7 @@ Nouveau_Tirage:
             m_pt(i).rM = planeteAxeZ.aPlanete(j).rMasse
             If m_pt(i).rM = 0 Then Stop
             Dim iDiametre0% = CInt(m_aff.rZoom * m_pt(i).rM * 2)
-            'Or bTestOrb3D Then _
-            If m_b3D Then _
-                iDiametre0 = CInt(0.5 * m_aff.rZoom * m_pt(i).rM * 2)
+            If m_b3D Then iDiametre0 = CInt(0.5 * m_aff.rZoom * m_pt(i).rM * 2)
             ReDim Preserve m_aSprites(m_iNbSprites)
             m_iNbSprites += 1
             Dim rSpin! = planeteAxeZ.aPlanete(j).rSpin
