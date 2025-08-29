@@ -1,4 +1,6 @@
 ﻿
+Imports System.Text
+
 Module modUtil
 
     ' Attribut pour éviter que l'IDE s'interrompt en cas d'exception
@@ -96,6 +98,112 @@ Module modUtil
         Next
         If iNbApplis > 1 Then Return True
         Return False
+
+    End Function
+
+    Public Function sInfoRamDll$(Optional sMsg$ = "RAM : ")
+
+        Dim x As Process = System.Diagnostics.Process.GetCurrentProcess
+        Dim lRamAllocatedInApp& = x.WorkingSet64
+
+        Dim sRamAllocatedInApp$ = sFormaterTailleOctets(lRamAllocatedInApp)
+
+        If Not Is64BitProcess() Then
+            Dim lRamAvailable32 As ULong = CULng(1.6 * 1024 * 1024 * 1024) ' 1.6 Gb
+            If lRamAvailable32 < My.Computer.Info.AvailablePhysicalMemory Then
+                lRamAvailable32 = My.Computer.Info.AvailablePhysicalMemory
+            End If
+            Dim sRamAvailable32$ = sFormaterTailleOctets(CLng(lRamAvailable32))
+            Dim rPCRAMUsed32! = CSng(lRamAllocatedInApp / lRamAvailable32)
+            Dim sRam32$ = sMsg & sRamAllocatedInApp & " / " & sRamAvailable32 & " (" & rPCRAMUsed32.ToString("0.0 %") & ")"
+            Return sRam32
+        End If
+
+        Dim lRamAvailable As ULong = My.Computer.Info.AvailablePhysicalMemory
+        Dim sRamAvailable$ = sFormaterTailleOctets(CLng(lRamAvailable))
+        Dim lRamTot As ULong = My.Computer.Info.TotalPhysicalMemory
+        Dim sRamTot$ = sFormaterTailleOctets(CLng(lRamTot))
+        Dim lAllocatedTot As ULong = lRamTot - lRamAvailable
+        Dim sRamAllocatedTot$ = sFormaterTailleOctets(CLng(lAllocatedTot))
+        Dim lAllocatedOther As ULong = CULng(lAllocatedTot - lRamAllocatedInApp)
+        Dim sRamAllocatedOther$ = sFormaterTailleOctets(CLng(lAllocatedOther))
+
+        Dim rPCRAMUsed! = CSng(lAllocatedTot / lRamTot)
+        Dim sRam$ = sMsg & sRamAllocatedInApp & " + " & sRamAllocatedOther & " = " & sRamAllocatedTot &
+            " / " & sRamTot & " (" & rPCRAMUsed.ToString("0.0 %") & ")"
+        Return sRam
+
+    End Function
+
+    Public Function Is64BitProcess() As Boolean
+        Return (IntPtr.Size = 8)
+    End Function
+
+    Public Function sFormaterTailleOctets$(lSizeInBytes&,
+                Optional bDetail As Boolean = False,
+                Optional bRemoveDotZero As Boolean = False)
+
+        ' https://fr.wikipedia.org/wiki/Octet
+
+        Dim rNbKo! = CSng(Math.Round(lSizeInBytes / 1024, 1))
+        Dim rNbMo! = CSng(Math.Round(lSizeInBytes / (1024 * 1024), 1))
+        Dim rNbGo! = CSng(Math.Round(lSizeInBytes / (1024 * 1024 * 1024), 1))
+        Dim sAff$ = ""
+
+        If bDetail Then
+            sAff = sFormaterNumerique(lSizeInBytes) & " octets"
+            If rNbKo >= 1 Then sAff &= " (" & sFormaterNumerique(rNbKo) & " Ko"
+            If rNbMo >= 1 Then sAff &= " = " & sFormaterNumerique(rNbMo) & " Mo"
+            If rNbGo >= 1 Then sAff &= " = " & sFormaterNumerique(rNbGo) & " Go"
+            If rNbKo >= 1 Or rNbMo >= 1 Or rNbGo >= 1 Then sAff &= ")"
+        Else
+            If rNbGo >= 1 Then
+                sAff = sFormaterNumerique(rNbGo, bRemoveDotZero) & " Go"
+            ElseIf rNbMo >= 1 Then
+                sAff = sFormaterNumerique(rNbMo, bRemoveDotZero) & " Mo"
+            ElseIf rNbKo >= 1 Then
+                sAff = sFormaterNumerique(rNbKo, bRemoveDotZero) & " Ko"
+            Else
+                sAff = sFormaterNumerique(lSizeInBytes,
+                    bSupprimerPointZero:=True) & " octets"
+            End If
+        End If
+
+        sFormaterTailleOctets = sAff
+
+    End Function
+
+    Public Function sFormaterTailleKOctets$(lSizeInBytes&,
+            Optional bRemoveDotZero As Boolean = False)
+
+        Dim rNbKb! = CSng(Math.Ceiling(lSizeInBytes / 1024))
+        sFormaterTailleKOctets = sFormaterNumerique(rNbKb, bRemoveDotZero) & " Ko"
+
+    End Function
+
+    Public Function sFormaterNumerique$(rVal!,
+            Optional bSupprimerPointZero As Boolean = True,
+            Optional iNbDecimales% = 1)
+
+        Dim nfi As New Globalization.NumberFormatInfo With {
+            .NumberGroupSeparator = " ",
+            .NumberDecimalSeparator = ".",
+            .NumberGroupSizes = New Integer() {3, 3, 3},
+            .NumberDecimalDigits = iNbDecimales
+        }
+
+        Dim sAff$ = rVal.ToString("n", nfi)
+        If bSupprimerPointZero Then
+            If iNbDecimales = 1 Then
+                sAff = sAff.Replace(".0", "")
+            ElseIf iNbDecimales > 1 Then
+                Dim i%
+                Dim sb As New StringBuilder(".")
+                For i = 1 To iNbDecimales : sb.Append("0") : Next
+                sAff = sAff.Replace(sb.ToString, "")
+            End If
+        End If
+        Return sAff
 
     End Function
 

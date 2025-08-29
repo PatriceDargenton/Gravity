@@ -1,10 +1,15 @@
 
 Imports System.Drawing.Drawing2D ' Pour LinearGradientBrush
-Imports System.IO ' Pour Path, FileInfo
+Imports System.IO
+Imports System.Text ' Pour Path, FileInfo
 
 Public Class SimulteurGravite : Implements IDisposable
 
 #Region "Constantes"
+
+    ' Relire un tirage sauvegardé
+    Private Const bLireSessionTirage As Boolean = False ' False
+    Public Const bMasquerConfig As Boolean = False 'False
 
     Public Const bDebugPosEtVitInitiales As Boolean = False
 
@@ -13,7 +18,6 @@ Public Class SimulteurGravite : Implements IDisposable
 
     ' Si c'est chaotique, cela ne va pas toujours fonctionner, même pratiquement jamais
     Public Const bDetecterBoucle As Boolean = False
-    Public Const bMasquerConfig As Boolean = False
     Public Const iTpsBoucleMinSec% = 5
     Public Const iDebugNPremieresSec% = 2
     Public Const iDebugDelaiDepartMSec% = 500
@@ -173,6 +177,11 @@ Public Class SimulteurGravite : Implements IDisposable
         Dim bPauseAnimation As Boolean
         Dim sFiltreFichiersImgSprite$
         Dim sFiltreFichiersImgFond$
+
+        ' 02/08/2025
+        Dim rRndFichiersImgFondNumero As Decimal
+        Dim rRndFichiersImgFondAgrandissement As Decimal
+        Dim rRndFichiersImgFondDecalage As Decimal
 
     End Structure
 
@@ -353,18 +362,24 @@ Public Class SimulteurGravite : Implements IDisposable
         Const iRndb3D% = 14
         Const iRndbChocs% = 15
         Const iRndb3D_bPlanetesAxeV_bRnd% = 16
+        ' 02/08/2025
+        Const iRndImageFond% = 17
+        Const iRndImageFondAgrandissement% = 18
+        Const iRndImageFondDecalage% = 19
+        'Const iRndMax% = iRndb3D_bPlanetesAxeV_bRnd
+        Const iRndMax% = iRndImageFondDecalage ' 02/08/2025
 
         ' Idée : considérer sys2.iNbPts Max : sys1.iDegreRacineMax + sys2.iDegreRacineMax
         ' 17 à 17 + sys2.iNbPts * 6
         Const bMemoriserEntierementTirage As Boolean = True ' 27/07/2025
         Dim iNbPoints2% = m_prm.iDegreRacine2RndMax
-        Const iNbRnd% = 16
+        Const iNbRnd% = iRndMax '16
         Dim iNbPlanetes3D% = 1 + m_prm.b3D_iNbPlanetesMaxAxeV * 4
         Dim iNbRnd1% = iNbRnd
         Dim iNbRnd1AvecP3D% = iNbRnd1 + iNbPlanetes3D
         Dim iNbRnd1Et2% = iNbRnd1AvecP3D + iNbPoints2 * 3
-        'Dim arRnd(iNbRnd1Et2) As Decimal
-        Static arRnd(iNbRnd1Et2) As Decimal ' 27/07/2025 Test de conservation du tirage
+        Dim arRnd(iNbRnd1Et2) As Decimal
+        'Static arRnd(iNbRnd1Et2) As Decimal ' 27/07/2025 Test de conservation du tirage
 
         Dim asFichiersImg$() = Nothing
 
@@ -395,22 +410,30 @@ Public Class SimulteurGravite : Implements IDisposable
 
 Nouveau_Tirage:
         m_bMembCercle = m_prm.bCercle
-        Randomize() ' Initialise le générateur de nombres aléatoires.
-        Static bInit As Boolean = False
-        'If Not bInit Then
-        For i = 0 To iNbRnd1Et2
-            arRnd(i) = CDec(Rnd())
-        Next i
-        'End If
-        bInit = True
+
+        If bLireSessionTirage Then
+            LireTirage(iNbRnd1Et2, arRnd)
+        Else
+            'Debug.WriteLine("Tirage...")
+            Randomize() ' Initialise le générateur de nombres aléatoires.
+            For i = 0 To iNbRnd1Et2
+                arRnd(i) = CDec(Rnd())
+            Next i
+            EcrireTirage(iNbRnd1Et2, arRnd)
+            'Debug.WriteLine("Fin tirage, fichier sauvé.")
+        End If
+
+        ' 02/08/2025
+        m_prm.rRndFichiersImgFondNumero = arRnd(iRndImageFond)
+        m_prm.rRndFichiersImgFondAgrandissement = arRnd(iRndImageFondAgrandissement)
+        m_prm.rRndFichiersImgFondDecalage = arRnd(iRndImageFondDecalage)
 
         m_bChocs = m_prm.bChocs
         If m_prm.bChocs_bRnd Then _
             m_bChocs = (arRnd(iRndbChocs) > 0.5) ' 1 chance sur 2
 
         m_b3D = m_prm.b3D
-        If m_prm.b3D_bRnd Then _
-            m_b3D = (arRnd(iRndb3D) > 0.5)
+        If m_prm.b3D_bRnd Then m_b3D = (arRnd(iRndb3D) > 0.5)
 
         ' Si on active les chocs, on désactive la 3D
         If m_bChocs And Not bDebugChoc Then m_b3D = False
@@ -846,6 +869,36 @@ Nouveau_Tirage:
                 m_aSprites(i).InitialiserImage(sFichierImagePlanete)
             End If
         Next i
+
+    End Sub
+
+    Private Sub EcrireTirage(iNbRnd%, arRnd() As Decimal)
+
+        Dim sCheminTirage$ = Application.StartupPath & "\" & sFichierTirage & ".dat"
+        Dim sCheminTirageBak$ = Application.StartupPath & "\" & sFichierTirage & ".bak"
+        If File.Exists(sCheminTirage) Then File.Copy(sCheminTirage, sCheminTirageBak, overwrite:=True)
+
+        Using fs As New IO.FileStream(sCheminTirage, IO.FileMode.Create, IO.FileAccess.Write)
+            Using bw As New IO.BinaryWriter(fs, Encoding.GetEncoding(iCodePageWindowsLatin1252))
+                For i As Integer = 0 To iNbRnd - 1
+                    bw.Write(arRnd(i))
+                Next
+            End Using
+        End Using
+
+    End Sub
+
+    Private Sub LireTirage(iNbRnd%, arRnd() As Decimal)
+
+        Dim sCheminTirage$ = Application.StartupPath & "\" & sFichierTirage & ".dat"
+        If Not File.Exists(sCheminTirage) Then Exit Sub
+        Using fs As New IO.FileStream(sCheminTirage, IO.FileMode.Open, IO.FileAccess.Read)
+            Using br As New IO.BinaryReader(fs, Encoding.GetEncoding(iCodePageWindowsLatin1252))
+                For i As Integer = 0 To iNbRnd - 1
+                    arRnd(i) = br.ReadDecimal()
+                Next
+            End Using
+        End Using
 
     End Sub
 
@@ -1551,14 +1604,13 @@ Suite:
             iNbFichiersImg = 0
         End Try
 
-        If iNbFichiersImg = 0 Then _
-            m_bImageFondTrouve = False : GoTo Fin
+        If iNbFichiersImg = 0 Then m_bImageFondTrouve = False : GoTo Fin
 
         m_bImageFondTrouve = True
-        Dim iNumImg% = CInt(Rnd() * iNbFichiersImg)
+        'Dim iNumImg% = CInt(Rnd() * iNbFichiersImg)
+        Dim iNumImg% = CInt(m_prm.rRndFichiersImgFondNumero * iNbFichiersImg) ' 02/08/2025
         If iNumImg >= iNbFichiersImg Then iNumImg = iNumImg - 1
         sFichierImageFond = asFichiersImg(iNumImg)
-        'MsgBox("Fichier choisi : " & sFichierImageFond)
 
         If Not m_imgFond Is Nothing Then m_imgFond.Dispose()
 
@@ -1581,8 +1633,12 @@ Suite:
             Dim rMaxZoom! = rZoomV
             If rZoomH > rMaxZoom Then rMaxZoom = rZoomH
 
-            Dim rAg! = 1 + 1 * Rnd()
-            Dim rDec! = Rnd()
+            '02/08/2025
+            'Dim rAg! = 1 + 1 * Rnd()
+            'Dim rDec! = Rnd()
+            Dim rAg! = 1 + 1 * m_prm.rRndFichiersImgFondAgrandissement
+            Dim rDec! = m_prm.rRndFichiersImgFondDecalage
+
             'rAg = 1 : rDec = 0 : Centrée
             'rAg = 2 : rDec = 1 : Quart GH
             'rAg = 1 : rDec = 1 : Quart DB

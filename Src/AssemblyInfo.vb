@@ -8,4 +8,4 @@ Imports System.Reflection
 <Assembly: AssemblyCopyright("Copyright © 2025")>
 <Assembly: AssemblyTrademark("")>
 
-<Assembly: AssemblyVersion("2.0.4.*")>
+<Assembly: AssemblyVersion("2.0.5.*")>

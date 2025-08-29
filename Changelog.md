@@ -2,6 +2,10 @@
 
 Toutes les modifications notables apportées au projet Gravity sont documentées dans ce fichier.
 
+## [2.05] - 2025-08-29
+## Ajouté
+- Création de Gif animé : Sauvegarde et restauration d'une session (il restait quelques paramètres aléatoires à inclure dans la session)
+
 ## [2.04] - 2025-05-25
 ## Ajouté
 - Création de Gif animé

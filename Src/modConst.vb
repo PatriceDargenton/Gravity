@@ -44,4 +44,7 @@ Module modConst
     Public Const sbFondUni$ = "bFondUni"
     Public Const sbFondDegrade$ = "bFondDegrade"
 
+    Public Const sFichierTirage$ = "GravitySession"
+    Public Const iCodePageWindowsLatin1252% = 1252 ' windows-1252 = msoEncodingWestern
+
 End Module

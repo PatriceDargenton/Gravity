@@ -94,12 +94,15 @@ Public Class frmGravityNet ' : Inherits Form
 
     ' 25/05/2025 Création de Gif animés
     Const bGif As Boolean = False
-    Const bSimualtionGif As Boolean = False
-    Const iNbImagesMax% = 600
-    Const iGifLargeurPetite% = 400
+    Const bSimualtionGif As Boolean = False 'False
+    Const bDureeIllimiteeGif As Boolean = False
+    Const iNbImagesMax% = 2500 'Max.: 2500 '600
     Const iGifHauteurPetite% = 300
-    Const iGifHauteurGrande% = 720 '800
-    Const iGifLargeurGrande% = 1280 '600
+    Const iGifLargeurPetite% = 400
+    Const iGifHauteurGrande% = 720 '800   720+39 =  759
+    Const iGifLargeurGrande% = 1280 '600 1280+16 = 1296
+    Const iMargeL% = 16
+    Const iMargeH% = 39
     Const bGifGrand As Boolean = True
     Private m_gif As AnimatedGifCreator
     Private m_iNbGif% = 0
@@ -170,9 +173,9 @@ Public Class frmGravityNet ' : Inherits Form
 
             If bGif Then
                 If bGifGrand Then
-                    Me.Size = New Size(iGifLargeurGrande + 16, iGifHauteurGrande + 39)
+                    Me.Size = New Size(iGifLargeurGrande + iMargeL, iGifHauteurGrande + iMargeH)
                 Else
-                    Me.Size = New Size(iGifLargeurPetite + 16, iGifHauteurPetite + 39)
+                    Me.Size = New Size(iGifLargeurPetite + iMargeL, iGifHauteurPetite + iMargeH)
                 End If
             End If
 
@@ -689,6 +692,9 @@ Public Class frmGravityNet ' : Inherits Form
             InitialiserTimer()
         End If
 
+        ' 02/08/2025 Faire le tirage avant l'initialisation du fond (pour le tirage de l'image de fond)
+        If bTirageAleatoire Then m_gravity.TirageAleatoire()
+
         If bInitialiserFond Then
 
             Dim bVal As Boolean = Not m_prmE.bNePasBufferiserGr
@@ -706,7 +712,9 @@ Public Class frmGravityNet ' : Inherits Form
             End If
         End If
 
-        If bTirageAleatoire Then m_gravity.TirageAleatoire()
+        ' 02/08/2025 Remonté plus haut
+        'If bTirageAleatoire Then m_gravity.TirageAleatoire()
+
         If bTirageAleatoire And SimulteurGravite.bDebugPosEtVitInitiales Then _
             Me.ListViewPrm.Items.Item(ibPauseAnimation).Checked = True
 
@@ -940,7 +948,13 @@ Public Class frmGravityNet ' : Inherits Form
             iNbFrames = iNbFrames + 1
 
             If bGif AndAlso m_bDepartGif Then
-                Me.Text = m_sTitreAppli & " - Gif n°" & m_iNbGif & " : Img n°" & m_iNbImages & "/" & iNbImagesMax
+
+                Dim sMsg$ = m_sTitreAppli & " - Gif n°" & m_iNbGif & " : Img n°" & m_iNbImages & "/" & iNbImagesMax
+                Static sRam$
+                If m_iNbImages Mod 10 = 0 Then sRam = ", " & sInfoRamDll()
+                sMsg &= sRam
+                Me.Text = sMsg
+
             ElseIf iNbFrames = iNbFramesCalculMoy Then
                 rDate = DateAndTime.Timer
                 If rDate <> rMemDate Then
@@ -970,11 +984,14 @@ Public Class frmGravityNet ' : Inherits Form
             Exit Sub
         End If
 
-        If m_gravity.m_bToutesPlanetesHorsEcran OrElse
-            DateAndTime.Timer - m_rMemDateDepartAnimation > m_prmE.iTempsMaxScenarioSec Then
+        If (Not bDureeIllimiteeGif OrElse Not m_bDepartGif) AndAlso
+            (m_gravity.m_bToutesPlanetesHorsEcran OrElse
+             DateAndTime.Timer - m_rMemDateDepartAnimation > m_prmE.iTempsMaxScenarioSec) Then
+
             MAJAnimation(bTirageAleatoire:=True, bInitialiserFond:=True, bControlerPrm:=False)
             ' 25/05/2025 Création de Gif animés : départ automatique
             If bGif Then DepartNouveauGif()
+
         End If
         m_gravity.SimulerGravite(m_rMemDateDepartAnimation)
 
